@@ -5,8 +5,10 @@ from tqdm import tqdm
 
 class DataHandler():
     def __init__(self):
+        """
+        Constructor de la classe DataHandler
+        """
         self.labels_df = None
-        self.windows_matrix = None
 
     def read_labels_data(self, filepath):
         '''
@@ -69,11 +71,12 @@ class DataHandler():
         # split dataframe by recordings
         recordings = []
         unique_recordings = list(set(pd_pacient["filename"]))
+        print("Splitting data by recordings...")
         # list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
         for recording in unique_recordings:
             recordings.append(pd_pacient[pd_pacient["filename"] == recording])
-            print("Recording: ", recording)
-            print("Recording shape: ", recordings[-1].shape)
+            #print("Recording: ", recording)
+            #print("Recording shape: ", recordings[-1].shape)
 
         # remove last 3 columns
         recordings = [recording.iloc[:, :-3] for recording in recordings]
@@ -85,6 +88,8 @@ class DataHandler():
         periods = []
         seconds_discard = 30
 
+        print(f"Generating windows for patient {pat_id}.\nWhich has {len(recordings)} recordings: {unique_recordings}")
+        print("Splitting data by periods...")
         for i,(recording,labels) in enumerate(zip(recordings,labels_pacient.iterrows())):
             # turn recording to numpy array
             recording = recording.to_numpy()
@@ -105,10 +110,12 @@ class DataHandler():
 
         # create windows by periods
         WINDOW_SIZE = 128
-        windows_array = np.empty((0,WINDOW_SIZE))
+        windows = []
+        #windows_array = np.empty((0,WINDOW_SIZE))
         metadata = pd.DataFrame(columns=["id","label","pacient","index_inicial","periode","recording"])
         window_id = 0
 
+        print("Generating windows...")
         for n_period,period in tqdm(enumerate(periods), total=len(periods), desc="Generating windows"):
             # turn period to numpy array
             label = period[0]
@@ -120,12 +127,15 @@ class DataHandler():
             for i in range(0,period.shape[0],WINDOW_SIZE):
                 if i+WINDOW_SIZE <= period.shape[0]:
                     window = period[i:i+WINDOW_SIZE]
-                    windows_array = np.vstack((windows_array,window.T))
+                    windows.append(window)
                     row = pd.DataFrame([[window_id,label,pat_id,i,n_period,recording]],columns=["id","label","pacient","index_inicial","periode","recording"])
                     metadata = pd.concat([metadata,row],ignore_index=True)
                     window_id += 1
 
             break # debugging purposes
+
+        # turn windows to numpy array
+        windows_array = np.array(windows)
         
         return windows_array, metadata
 
@@ -147,6 +157,43 @@ class DataHandler():
 
         # save metadata as csv
         metadata.to_csv(os.path.join(folder,filename), index=False)
+
+    def preprocess_data(self, raw_data_folder, window_data_folder, metadata_folder):
+        """
+        Preprocessa les dades raw del folder .
+        Guarda les finestres i les metadades en el folder indicat.
+
+        :param raw_data_folder: ruta del directori amb les dades raw
+        :type raw_data_folder: str
+        :param window_data_folder: ruta del directori on guardarem les finestres
+        :type window_data_folder: str
+        :param metadata_folder: ruta del directori on guardarem les metadades
+        :type metadata_folder: str
+        """
+
+        # Read labels file
+        self.read_labels_data(os.path.join(raw_data_folder,"df_annotation_full.xlsx"))
+
+        # get list of files ending with .parquet
+
+        list_files = os.listdir(raw_data_folder)
+        list_files = [file for file in list_files if file.endswith(".parquet")]
+        
+        print("Preprocessing data from folder: ", raw_data_folder)
+
+        
+        # iterate over files
+        for file in list_files:
+            print("Preprocessing file: ", file)
+
+            # read raw data
+            pd_pacient = self.read_raw_data(os.path.join(raw_data_folder, file))
+
+            # generate windows
+            windows_array, metadata = self.generate_windows(pd_pacient)
+
+            # save data
+            self.save_data(window_data_folder, file[:-8] + ".csv", windows_array, metadata)
         
 
 if __name__ == "__main__":
