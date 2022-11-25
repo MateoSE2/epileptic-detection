@@ -115,6 +115,8 @@ class DataHandler():
         #windows_array = np.empty((0,WINDOW_SIZE))
         metadata = pd.DataFrame(columns=["id","label","pacient","index_inicial","periode","recording"])
         window_id = 0
+        num_periods = 5
+        n_period = 0
 
         print("Generating windows...")
         for n_period,period in tqdm(enumerate(periods), total=len(periods), desc="Generating windows"):
@@ -132,7 +134,10 @@ class DataHandler():
                     metadata = pd.concat([metadata,row],ignore_index=True)
                     window_id += 1
 
-            break # debugging purposes
+            # debugging purposes
+            n_period += 1
+            if n_period == num_periods:
+                break
 
         # turn windows to numpy array
         windows_array = np.array(windows)
@@ -202,6 +207,8 @@ class DataHandler():
 
             # generate windows
             windows_array, metadata = self.generate_windows(pd_pacient)
+
+            print("Saving windows and metadata...")
 
             # save data
             self.save_window_data(file[:-8] + ".npz", windows_array)
