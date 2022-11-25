@@ -26,6 +26,12 @@ if __name__ == '__main__':
         # run the preprocessing
         data_handler = DataHandler(raw_data_folder, window_folder, metadata_folder, second_window_size = 1)
         data_handler.preprocess_data()
+    elif mode == "classic_ml":
+        # run the classic machine learning
+        raise NotImplementedError
+    elif mode == "deep_learning":
+        # run the deep learning
+        raise NotImplementedError
 
 
 

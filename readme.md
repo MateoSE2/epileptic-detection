@@ -8,10 +8,10 @@ This is a project for the course "MAPSIV" at UAB. The goal is to detect epilepti
 
 ## Conda environment
 
-The conda environment is defined in the file `env.txt`. To create the environment, run the following command:
+The conda environment is defined in the file `environment.yml`. To create the environment, run the following command:
 
 ```bash
-conda create --name <env> --file env.txt
+conda env create -f environment.yml
 ```
 
 ## Preprocessing
@@ -21,5 +21,3 @@ The preprocessing is done by the object "DataHandler". It is defined in the file
 ```bash
 python main.py preprocess <path_of_raw_data> <path_to_store_window_data> <path_to_store_metadata>
 ```
-
-
