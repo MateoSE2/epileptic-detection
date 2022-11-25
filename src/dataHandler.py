@@ -4,13 +4,18 @@ import numpy as np
 from tqdm import tqdm
 
 class DataHandler():
-    def __init__(self):
+    def __init__(self, raw_data_folder, window_data_folder, metadata_folder, second_window_size = 1):
         """
         Constructor de la classe DataHandler
         """
         self.labels_df = None
+        self.data_per_sec = 128
+        self.WINDOW_SIZE = second_window_size * self.data_per_sec
+        self.raw_data_folder = raw_data_folder
+        self.window_data_folder = window_data_folder
+        self.metadata_folder = metadata_folder
 
-    def read_labels_data(self, filepath):
+    def read_labels_data(self):
         '''
         Llegeix les dades de les etiquetes (Excel) i les guarda com a atribut de l'objecte DataHandler com a pandas dataframe (self.labels_df).
         :param filepath: ruta del Excel
@@ -18,14 +23,14 @@ class DataHandler():
         '''
 
         # read labels excel file
-        pd_tmp= pd.read_excel(filepath) # conda install openpyxl
+        pd_tmp= pd.read_excel(os.path.join(self.raw_data_folder, "df_annotation_full.xlsx"))
         
         # change PatID from chb01 to 1
         pd_tmp["PatID"] = pd_tmp["PatID"].apply(lambda x: int(x[3:5]))
 
         # multiply every value by 128 to get the index in the raw data
-        pd_tmp["seizure_start"] = pd_tmp["seizure_start"].apply(lambda x: x*128)
-        pd_tmp["seizure_end"] = pd_tmp["seizure_end"].apply(lambda x: x*128)
+        pd_tmp["seizure_start"] = pd_tmp["seizure_start"].apply(lambda x: x*self.data_per_sec)
+        pd_tmp["seizure_end"] = pd_tmp["seizure_end"].apply(lambda x: x*self.data_per_sec)
 
         self.labels_df = pd_tmp
 
@@ -73,7 +78,7 @@ class DataHandler():
         unique_recordings = list(set(pd_pacient["filename"]))
         print("Splitting data by recordings...")
         # list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
-        for recording in unique_recordings:
+        for recording in tqdm(unique_recordings, total=len(unique_recordings)):
             recordings.append(pd_pacient[pd_pacient["filename"] == recording])
             #print("Recording: ", recording)
             #print("Recording shape: ", recordings[-1].shape)
@@ -106,10 +111,6 @@ class DataHandler():
             else:
                 periods.append((0,i,recording))
 
-        a = 0
-
-        # create windows by periods
-        WINDOW_SIZE = 128
         windows = []
         #windows_array = np.empty((0,WINDOW_SIZE))
         metadata = pd.DataFrame(columns=["id","label","pacient","index_inicial","periode","recording"])
@@ -122,11 +123,10 @@ class DataHandler():
             recording = period[1]
             period = period[2]
 
-
             # slice by windows
-            for i in range(0,period.shape[0],WINDOW_SIZE):
-                if i+WINDOW_SIZE <= period.shape[0]:
-                    window = period[i:i+WINDOW_SIZE]
+            for i in range(0,period.shape[0],self.WINDOW_SIZE):
+                if i+self.WINDOW_SIZE <= period.shape[0]:
+                    window = period[i:i+self.WINDOW_SIZE]
                     windows.append(window)
                     row = pd.DataFrame([[window_id,label,pat_id,i,n_period,recording]],columns=["id","label","pacient","index_inicial","periode","recording"])
                     metadata = pd.concat([metadata,row],ignore_index=True)
@@ -139,7 +139,7 @@ class DataHandler():
         
         return windows_array, metadata
 
-    def save_data(self,folder,filename,window_array,metadata):
+    def save_window_data(self,filename,window_array):
         """
         Guarda les windows i les metadades al folder
 
@@ -148,17 +148,28 @@ class DataHandler():
         """
 
         # if necessary create folder
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        if not os.path.exists(self.window_data_folder):
+            os.makedirs(self.window_data_folder)
         
-
         # save windows as compressed numpy array
-        np.savez_compressed(os.path.join(folder, "windows.npz"), window_array)
+        np.savez_compressed(os.path.join(self.window_data_folder, filename), window_array)
+    
+    def save_metadata(self,filename,metadata):
+        """
+        Guarda les windows i les metadades al folder
 
+        :param folder: ruta del directori on guardarem la info
+        :type folder: str
+        """
+
+        # if necessary create folder
+        if not os.path.exists(self.metadata_folder):
+            os.makedirs(self.metadata_folder)
+        
         # save metadata as csv
-        metadata.to_csv(os.path.join(folder,filename), index=False)
+        metadata.to_csv(os.path.join(self.metadata_folder,filename), index=False)
 
-    def preprocess_data(self, raw_data_folder, window_data_folder, metadata_folder):
+    def preprocess_data(self):
         """
         Preprocessa les dades raw del folder .
         Guarda les finestres i les metadades en el folder indicat.
@@ -172,14 +183,14 @@ class DataHandler():
         """
 
         # Read labels file
-        self.read_labels_data(os.path.join(raw_data_folder,"df_annotation_full.xlsx"))
+        self.read_labels_data()
 
         # get list of files ending with .parquet
 
-        list_files = os.listdir(raw_data_folder)
+        list_files = os.listdir(self.raw_data_folder)
         list_files = [file for file in list_files if file.endswith(".parquet")]
         
-        print("Preprocessing data from folder: ", raw_data_folder)
+        print("Preprocessing data from folder: ", self.raw_data_folder)
 
         
         # iterate over files
@@ -187,13 +198,17 @@ class DataHandler():
             print("Preprocessing file: ", file)
 
             # read raw data
-            pd_pacient = self.read_raw_data(os.path.join(raw_data_folder, file))
+            pd_pacient = self.read_raw_data(os.path.join(self.raw_data_folder, file))
 
             # generate windows
             windows_array, metadata = self.generate_windows(pd_pacient)
 
             # save data
-            self.save_data(window_data_folder, file[:-8] + ".csv", windows_array, metadata)
+            self.save_window_data(file[:-8] + ".npz", windows_array)
+
+            # save metadata
+            self.save_metadata(file[:-8] + ".csv", metadata)
+            
         
 
 if __name__ == "__main__":

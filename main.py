@@ -19,14 +19,13 @@ if __name__ == '__main__':
     # for testing
     mode = "preprocessing"
     raw_data_folder = "data/raw_example"
-    window_folder = "data/windowed"
+    window_folder = "data/windows_data"
     metadata_folder = "data/metadata"
 
     if mode == "preprocessing":
         # run the preprocessing
-        data_handler = DataHandler()
-        data_handler.preprocess_data(raw_data_folder, window_folder, metadata_folder)
-
+        data_handler = DataHandler(raw_data_folder, window_folder, metadata_folder, second_window_size = 1)
+        data_handler.preprocess_data()
 
 
 
