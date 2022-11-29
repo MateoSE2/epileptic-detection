@@ -11,16 +11,16 @@ from src.dataHandler import DataHandler
 if __name__ == '__main__':
 
     # get the script arguments
-    #mode = sys.argv[1]
-    #raw_data_folder = sys.argv[2]
-    #window_folder = sys.argv[3]
-    #metadata_folder = sys.argv[4]
+    mode = sys.argv[1]
+    raw_data_folder = sys.argv[2]
+    window_folder = sys.argv[3]
+    metadata_folder = sys.argv[4]
 
     # for testing
-    mode = "preprocessing"
-    raw_data_folder = "data/raw_example"
-    window_folder = "data/windows_data"
-    metadata_folder = "data/metadata"
+    #mode = "preprocessing"
+    #raw_data_folder = "data/raw_example"
+    #window_folder = "data/windows_data"
+    #metadata_folder = "data/metadata"
 
     if mode == "preprocessing":
         # run the preprocessing
