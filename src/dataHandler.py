@@ -136,9 +136,9 @@ class DataHandler:
                     window_id += 1
 
             # debugging purposes
-            n_period += 1
-            if n_period == num_periods:
-                break
+            # n_period += 1
+            # if n_period == num_periods:
+            #     break
 
         # turn windows to numpy array
         windows_array = np.array(windows)
