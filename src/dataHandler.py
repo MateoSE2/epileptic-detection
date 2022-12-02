@@ -182,7 +182,7 @@ class DataHandler:
         # save metadata as csv
         metadata.to_csv(os.path.join(self.metadata_folder,filename), index=False)
 
-    def preprocess_data(self):
+    def preprocess_data(self, excepting = []):
         """
         Preprocessa les dades raw del folder .
         Guarda les finestres i les metadades en el folder indicat.
@@ -202,6 +202,9 @@ class DataHandler:
 
         list_files = os.listdir(self.raw_data_folder)
         list_files = [file for file in list_files if file.endswith(".parquet")]
+
+        # remove the files from the excepting list
+        list_files = [file for file in list_files if file not in excepting]
         
         print("Preprocessing data from folder: ", self.raw_data_folder)
 
