@@ -53,7 +53,13 @@ class DataHandler:
         # extract recordings
         list_recordings = list(set(pd_pacient["filename"]))
         print(list_recordings)
-        list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
+        new_list_recordings = []
+        for recording in list_recordings:
+            r = recording.split("_")[1][:-4]
+            try:
+                new_list_recordings.append(int(r))
+            except:
+                print("Recording: ", r, " not valid")
 
         return  pd_pacient
 
