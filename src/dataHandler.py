@@ -52,6 +52,7 @@ class DataHandler:
 
         # extract recordings
         list_recordings = list(set(pd_pacient["filename"]))
+        print(list_recordings)
         list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
 
         return  pd_pacient

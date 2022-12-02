@@ -1,0 +1,30 @@
+Data generation:
+- follow new governance
+- Mateo
+
+EDA:
+- mirar si la senyal es mes o menys constant durant el temps que esta be per cada recording
+- buscar valor per normalitzar
+- Gerard
+
+Dataset + Dataloader:
+
+- Mateo
+
+Tranformacions per data augmentation:
+- Normalization
+- Sliding
+- Interpolation
+- Investigar transforms de senyals per classificació
+- De moment res fins tenir la EDA feta
+
+Wandb:
+- Gerard
+
+Callback:
+- Visualitzar la informacio que aporta cada canal (Wandb?)
+
+Optuna:
+- Mateo
+
+25 pacients * 7 recordings with seizure * 60s of seizure / 1s splits = 10500 examples aprox.
