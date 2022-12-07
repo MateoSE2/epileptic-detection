@@ -1,4 +1,5 @@
 import os
+from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -61,6 +62,8 @@ class DataHandler:
             except:
                 print("Recording: ", r, " not valid")
 
+        
+
         return  pd_pacient
 
 
@@ -84,6 +87,8 @@ class DataHandler:
         # split dataframe by recordings
         recordings = []
         unique_recordings = list(set(pd_pacient["filename"]))
+        unique_recordings = sorted(unique_recordings, key=lambda x: int(x.split("_")[1][:-4]))
+        print(unique_recordings)
         print("Splitting data by recordings...")
         # list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
         for recording in tqdm(unique_recordings, total=len(unique_recordings)):
@@ -116,6 +121,27 @@ class DataHandler:
                 periods.append((0,i,recording[:start_seizure-(seconds_discard*128)]))
                 periods.append((1,i,recording[start_seizure:end_seizure]))
                 periods.append((0,i,recording[end_seizure+(seconds_discard*128):]))
+
+                # plot preseizure, seizure and postseizure to check
+                # plot every of the 21 channels in a grid
+                fig, axs = plt.subplots(7, 3, figsize=(15, 15))
+                for j in range(21):
+                    # concat preseizure, seizure and postseizure
+                    # add vertical lines to show where the seizure starts and ends
+                    data = np.concatenate((recording[:start_seizure-(seconds_discard*128)],recording[start_seizure:end_seizure],recording[end_seizure+(seconds_discard*128):]))
+                    axs[j//3, j%3].plot(data[:,j])
+                    #plot thin line
+                    axs[j//3, j%3].axvline(x=start_seizure-(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
+                    axs[j//3, j%3].axvline(x=end_seizure+(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
+                    axs[j//3, j%3].set_title(f"Channel {j}")
+
+
+                    
+                plt.tight_layout()
+                #plt.show()
+                plots_folder = os.path.join(self.raw_data_folder, "..","..", "plots")
+                plt.savefig(f"{plots_folder}/patient_{pat_id}_recording_{i}.png")
+
             else:
                 periods.append((0,i,recording))
 
@@ -123,7 +149,7 @@ class DataHandler:
         #windows_array = np.empty((0,WINDOW_SIZE))
         metadata = pd.DataFrame(columns=["id","label","pacient","index_inicial","periode","recording"])
         window_id = 0
-        num_periods = 5
+        num_periods = 10
         n_period = 0
 
         print("Generating windows...")
@@ -143,9 +169,9 @@ class DataHandler:
                     window_id += 1
 
             # debugging purposes
-            # n_period += 1
-            # if n_period == num_periods:
-            #     break
+            n_period += 1
+            if n_period == num_periods:
+                break
 
         # turn windows to numpy array
         windows_array = np.array(windows)
