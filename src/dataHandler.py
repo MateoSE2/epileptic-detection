@@ -143,7 +143,8 @@ class DataHandler:
                 plt.savefig(f"{plots_folder}/patient_{pat_id}_recording_{i}.png")
 
             else:
-                periods.append((0,i,recording))
+                pass # not add recordings without seizures
+                #periods.append((0,i,recording))
 
         windows = []
         #windows_array = np.empty((0,WINDOW_SIZE))
@@ -169,9 +170,9 @@ class DataHandler:
                     window_id += 1
 
             # debugging purposes
-            n_period += 1
-            if n_period == num_periods:
-                break
+            # n_period += 1
+            # if n_period == num_periods:
+            #     break
 
         # turn windows to numpy array
         windows_array = np.array(windows)
