@@ -67,7 +67,7 @@ class DataHandler:
         return  pd_pacient
 
 
-    def generate_windows(self, pd_pacient):
+    def generate_windows(self, pd_pacient, plot = False):
         """
         Separa el senyal del pacient en diferents recordings.
         Per cada recording, el separa per periodes (normal o atac (0/1)).
@@ -122,25 +122,26 @@ class DataHandler:
                 periods.append((1,i,recording[start_seizure:end_seizure]))
                 periods.append((0,i,recording[end_seizure+(seconds_discard*128):]))
 
-                # plot preseizure, seizure and postseizure to check
-                # plot every of the 21 channels in a grid
-                fig, axs = plt.subplots(7, 3, figsize=(15, 15))
-                for j in range(21):
-                    # concat preseizure, seizure and postseizure
-                    # add vertical lines to show where the seizure starts and ends
-                    data = np.concatenate((recording[:start_seizure-(seconds_discard*128)],recording[start_seizure:end_seizure],recording[end_seizure+(seconds_discard*128):]))
-                    axs[j//3, j%3].plot(data[:,j])
-                    #plot thin line
-                    axs[j//3, j%3].axvline(x=start_seizure-(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
-                    axs[j//3, j%3].axvline(x=end_seizure+(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
-                    axs[j//3, j%3].set_title(f"Channel {j}")
+                if plot:
+                    # plot preseizure, seizure and postseizure to check
+                    # plot every of the 21 channels in a grid
+                    fig, axs = plt.subplots(7, 3, figsize=(15, 15))
+                    for j in range(21):
+                        # concat preseizure, seizure and postseizure
+                        # add vertical lines to show where the seizure starts and ends
+                        data = np.concatenate((recording[:start_seizure-(seconds_discard*128)],recording[start_seizure:end_seizure],recording[end_seizure+(seconds_discard*128):]))
+                        axs[j//3, j%3].plot(data[:,j])
+                        #plot thin line
+                        axs[j//3, j%3].axvline(x=start_seizure-(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
+                        axs[j//3, j%3].axvline(x=end_seizure+(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
+                        axs[j//3, j%3].set_title(f"Channel {j}")
 
 
-                    
-                plt.tight_layout()
-                #plt.show()
-                plots_folder = os.path.join(self.raw_data_folder, "..","..", "plots")
-                plt.savefig(f"{plots_folder}/patient_{pat_id}_recording_{i}.png")
+                        
+                    plt.tight_layout()
+                    #plt.show()
+                    plots_folder = os.path.join(self.raw_data_folder, "..","..", "plots")
+                    plt.savefig(f"{plots_folder}/patient_{pat_id}_recording_{i}.png")
 
             else:
                 pass # not add recordings without seizures
