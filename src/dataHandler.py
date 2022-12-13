@@ -61,6 +61,7 @@ class DataHandler:
                 new_list_recordings.append(int(r))
             except:
                 print("Recording: ", r, " not valid")
+                new_list_recordings.append(int(r[:2]))
 
         
 
@@ -87,7 +88,8 @@ class DataHandler:
         # split dataframe by recordings
         recordings = []
         unique_recordings = list(set(pd_pacient["filename"]))
-        unique_recordings = sorted(unique_recordings, key=lambda x: int(x.split("_")[1][:-4]))
+
+        unique_recordings = sorted(unique_recordings, key=lambda x: int(x.split("_")[1][:2]))
         print(unique_recordings)
         print("Splitting data by recordings...")
         # list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
