@@ -61,13 +61,14 @@ class DataHandler:
                 new_list_recordings.append(int(r))
             except:
                 print("Recording: ", r, " not valid")
+                new_list_recordings.append(int(r[:2]))
 
         
 
         return  pd_pacient
 
 
-    def generate_windows(self, pd_pacient):
+    def generate_windows(self, pd_pacient, plot = False):
         """
         Separa el senyal del pacient en diferents recordings.
         Per cada recording, el separa per periodes (normal o atac (0/1)).
@@ -87,7 +88,8 @@ class DataHandler:
         # split dataframe by recordings
         recordings = []
         unique_recordings = list(set(pd_pacient["filename"]))
-        unique_recordings = sorted(unique_recordings, key=lambda x: int(x.split("_")[1][:-4]))
+
+        unique_recordings = sorted(unique_recordings, key=lambda x: int(x.split("_")[1][:2]))
         print(unique_recordings)
         print("Splitting data by recordings...")
         # list_recordings = [int(recording.split("_")[1][:-4]) for recording in list_recordings]
@@ -122,28 +124,30 @@ class DataHandler:
                 periods.append((1,i,recording[start_seizure:end_seizure]))
                 periods.append((0,i,recording[end_seizure+(seconds_discard*128):]))
 
-                # plot preseizure, seizure and postseizure to check
-                # plot every of the 21 channels in a grid
-                fig, axs = plt.subplots(7, 3, figsize=(15, 15))
-                for j in range(21):
-                    # concat preseizure, seizure and postseizure
-                    # add vertical lines to show where the seizure starts and ends
-                    data = np.concatenate((recording[:start_seizure-(seconds_discard*128)],recording[start_seizure:end_seizure],recording[end_seizure+(seconds_discard*128):]))
-                    axs[j//3, j%3].plot(data[:,j])
-                    #plot thin line
-                    axs[j//3, j%3].axvline(x=start_seizure-(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
-                    axs[j//3, j%3].axvline(x=end_seizure+(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
-                    axs[j//3, j%3].set_title(f"Channel {j}")
+                if plot:
+                    # plot preseizure, seizure and postseizure to check
+                    # plot every of the 21 channels in a grid
+                    fig, axs = plt.subplots(7, 3, figsize=(15, 15))
+                    for j in range(21):
+                        # concat preseizure, seizure and postseizure
+                        # add vertical lines to show where the seizure starts and ends
+                        data = np.concatenate((recording[:start_seizure-(seconds_discard*128)],recording[start_seizure:end_seizure],recording[end_seizure+(seconds_discard*128):]))
+                        axs[j//3, j%3].plot(data[:,j])
+                        #plot thin line
+                        axs[j//3, j%3].axvline(x=start_seizure-(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
+                        axs[j//3, j%3].axvline(x=end_seizure+(seconds_discard*128), color='r', linestyle='--', linewidth=0.5)
+                        axs[j//3, j%3].set_title(f"Channel {j}")
 
 
-                    
-                plt.tight_layout()
-                #plt.show()
-                plots_folder = os.path.join(self.raw_data_folder, "..","..", "plots")
-                plt.savefig(f"{plots_folder}/patient_{pat_id}_recording_{i}.png")
+                        
+                    plt.tight_layout()
+                    #plt.show()
+                    plots_folder = os.path.join(self.raw_data_folder, "..","..", "plots")
+                    plt.savefig(f"{plots_folder}/patient_{pat_id}_recording_{i}.png")
 
             else:
-                periods.append((0,i,recording))
+                pass # not add recordings without seizures
+                #periods.append((0,i,recording))
 
         windows = []
         #windows_array = np.empty((0,WINDOW_SIZE))
@@ -169,9 +173,9 @@ class DataHandler:
                     window_id += 1
 
             # debugging purposes
-            n_period += 1
-            if n_period == num_periods:
-                break
+            # n_period += 1
+            # if n_period == num_periods:
+            #     break
 
         # turn windows to numpy array
         windows_array = np.array(windows)
