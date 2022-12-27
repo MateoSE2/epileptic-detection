@@ -39,6 +39,7 @@ class LightningModule(pl.LightningModule):
         f_score = self.f_score(preds, target.int())
         self.log('train_loss', loss, on_step=True, logger=True)
         self.log('train_acc', acc, on_epoch=True, logger=True)
+        self.log('train_f_score', f_score, on_epoch=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -52,6 +53,7 @@ class LightningModule(pl.LightningModule):
         f_score = self.f_score(preds, target.int())
         self.log('val_loss', loss, on_step=True, logger=True)
         self.log('val_acc', acc, on_epoch=True, logger=True)
+        self.log('val_f_score', f_score, on_epoch=True, logger=True)
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -62,8 +64,10 @@ class LightningModule(pl.LightningModule):
         # test metrics
         preds = torch.argmax(logits, dim=1)
         acc = self.accuracy(preds, target)
+        f_score = self.f_score(preds, target.int())
         self.log('test_loss', loss, prog_bar=True)
         self.log('test_acc', acc, prog_bar=True)
+        self.log('test_f_score', f_score, on_epoch=True, logger=True)
         return loss
 
     def configure_optimizers(self):

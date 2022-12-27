@@ -1,12 +1,11 @@
 from pathlib import Path
 
-import pandas as pd
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
 from tsai.models.FCNPlus import FCNPlus
 
 from src.deep_learning.data.datamodule import DataModule
-from src.deep_learning.data.dataset import EpilepticDataset
 from src.deep_learning.models.lightning_module import LightningModule
 
 
@@ -25,7 +24,7 @@ def main():
     model = LightningModule(tsai_model, num_classes=num_classes, learning_rate=1e-3)
 
     # Logger
-    wandb_logger = None  # WandbLogger(project='epileptic-detection', job_type='train')
+    wandb_logger = WandbLogger(project='epileptic-detection', job_type='train')
 
     # Callbacks
     callbacks = [
@@ -35,7 +34,8 @@ def main():
     ]
 
     # Create trainer
-    trainer = pl.Trainer(max_epochs=30,
+    trainer = pl.Trainer(max_steps=1000,
+                         val_check_interval=500,
                          gpus=0,
                          logger=wandb_logger,
                          callbacks=callbacks,
