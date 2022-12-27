@@ -12,10 +12,6 @@ from src.deep_learning.models.lightning_module import LightningModule
 
 def main():
     root_data_dir = Path("../data/").resolve()
-    metadata = pd.read_csv(root_data_dir / "metadata" / "chb01_raw_eeg_128_full.csv")
-
-    # Create dataset
-    ds = EpilepticDataset(root_data_dir, metadata)
 
     # Create datamodule
     dm = DataModule(root_data_dir, batch_size=4)
