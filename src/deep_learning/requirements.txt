@@ -41,8 +41,8 @@ grpcio==1.42.0
 idna==3.4
 imbalanced-learn==0.9.1
 importlib-metadata==5.1.0
-ipykernel==6.17.0
-ipython==8.6.0
+#ipykernel==6.17.0
+#ipython==8.6.0
 itsdangerous==2.1.2
 jedi==0.18.1
 Jinja2==3.1.2
@@ -65,7 +65,7 @@ murmurhash==1.0.9
 nest-asyncio==1.5.6
 numba==0.56.4
 numexpr==2.8.4
-numpy==1.23.4
+numpy
 oauthlib==3.2.2
 openpyxl==3.0.10
 packaging==21.3

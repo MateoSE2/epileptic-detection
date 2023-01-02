@@ -1,0 +1,5 @@
+{
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "/home/mat/Desktop/4.1/epileptic-detection/"
+      },
+}

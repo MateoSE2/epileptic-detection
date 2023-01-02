@@ -8,7 +8,6 @@ from tsai.models.FCNPlus import FCNPlus
 from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.models.lightning_module import LightningModule
 
-
 def main():
     root_data_dir = Path("../data/").resolve()
 

@@ -19,8 +19,10 @@ class LightningModule(pl.LightningModule):
 
         self.softmax = nn.Softmax()
         self.loss = nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.Accuracy(num_classes=num_classes)
+        self.accuracy = torchmetrics.Accuracy(task = "binary", num_classes=num_classes)
         self.f_score = torchmetrics.F1Score(task='binary')
+
+        self.min_loss = 10000000
 
     def forward(self, x, metadata):
         x = self.model.backbone(x)
@@ -54,6 +56,10 @@ class LightningModule(pl.LightningModule):
         self.log('val_loss', loss, on_step=True, logger=True)
         self.log('val_acc', acc, on_epoch=True, logger=True)
         self.log('val_f_score', f_score, on_epoch=True, logger=True)
+
+        if loss<self.min_loss:
+            self.min_loss = loss.item()
+            
         return loss
 
     def test_step(self, batch, batch_idx):
