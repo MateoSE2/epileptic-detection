@@ -1,4 +1,3 @@
-#!/bin/sh
 import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -21,44 +20,68 @@ import time
 
 
 class SVM():
-    def __init__(self, path_content, data=None):
-        self.path_content= path_content
-        self.data= pd.DataFrame()
+    def __init__(self, path_features_training, path_features_testing, dim):
+        self.path_features_training= path_features_training
+        self.path_features_testing= path_features_testing
+        self.dim = dim
+
+    def data_balance(self, data, tipus):
+        print(f'\nDATA BALANCE del {tipus} de la dimensió {dim}')
+        print(f'# windows data: {data.shape[0]}')
+        data_non_seizure= data[data['label']== 0]
+        data_seizure= data[data['label']== 1]
+
+        count_non_seizure = data_non_seizure.shape[0]
+        count_seizure = data_seizure.shape[0]
+
+        print(f'  - # non seizure data: {count_non_seizure}')
+        print(f'  - # seizure data: {count_seizure}')
+
+        rows = abs(count_non_seizure - count_seizure)
+        print(f'Difference: {rows}')
+
+        if count_non_seizure > count_seizure:
+            data_non_seizure= data_non_seizure.iloc[rows:]
+
+        elif count_non_seizure < count_seizure:
+            data_seizure= data_seizure.iloc[rows:]
+
+        data_balancejada= pd.concat([data_non_seizure, data_seizure])
+        count_new_non_seizure= (data_balancejada[data_balancejada['label']== 0]).shape[0]
+        count_new_seizure= (data_balancejada[data_balancejada['label']== 1]).shape[0]
+        
+        print(f'# final data: {data_balancejada.shape[0]}')
+        print(f'  - # non seizure windows: {count_new_non_seizure}')
+        print(f'  - # seizure windows: {count_new_seizure}\n')
+
+        return data_balancejada
+
 
     def load_patient_features(self):
-        FeaturesData_path_files= os.listdir(self.path_content)
-        if '.DS_Store' in FeaturesData_path_files:
-            FeaturesData_path_files.remove('.DS_Store')
+        data_training = pd.read_csv(self.path_features_training)
+        data_balance_training= self.data_balance(data_training, 'training')
+        X_train= data_balance_training[["mean", "std", "median", "kurtosis", "skewness", "entropy", "min_value", "max_value"]]
 
-        for features_path_patient in FeaturesData_path_files:
-            path_csv= self.path_content+features_path_patient
 
-            data = pd.read_csv(self.path_content+features_path_patient)
+        self.X_train = X_train.to_numpy()
+        self.X_train[~np.isfinite(self.X_train)] = 0
 
-            if not data.empty:
-                if self.data.empty: #primera iter
-                    self.data= data
+        self.y_train= data_balance_training["label"].to_numpy()
+        
 
-                else: #concatenamos todos los datos en un pandas
-                    self.data= pd.concat([self.data, data], sort= False)
-            else:
-                print(f'Empty file: {features_path_patient}\n')
+        data_testing= pd.read_csv(self.path_features_testing)
+        data_balance_testing= self.data_balance(data_testing,'testing')
+        X_test= data_balance_testing[["mean", "std", "median", "kurtosis", "skewness", "entropy", "min_value", "max_value"]]
+        self.X_test = X_test.to_numpy()
+        self.X_test[~np.isfinite(self.X_test)] = 0
+        
+        self.y_test= data_balance_testing["label"].to_numpy()
+
 
     def train_model(self):
         start_time = time.time()
 
-        a = self.data[["mean", "std", "median", "kurtosis", "skewness", "entropy", "min_value", "max_value"]]
-        X = a.to_numpy()
-        X[~np.isfinite(X)] = 0
-        y = self.data["label"].to_numpy()
-
-        # k-fold cross validation
-        clf = make_pipeline(preprocessing.StandardScaler(), svm.SVC(C=1))
-        score = cross_val_score(clf, X, y, cv=5, scoring='f1').mean()
-        print(f"\nModel F1 socre = {score:0.4f}\n")
-
         self.model = make_pipeline(preprocessing.StandardScaler(), svm.SVC(C=1))
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         # fit the clf
         self.model.fit(self.X_train, self.y_train)
 
@@ -99,18 +122,23 @@ class SVM():
         pr_display = PrecisionRecallDisplay(precision=prec, recall=recall).plot()
         plt.savefig(path_folder+'Precision_Recall.png') #save curves
 
+dimensions= ['pacient', 'recording', 'periode']
 
-path_features= '/home/mapiv05/epileptic-detection/data/features_data/'
+for dim in dimensions:
+    path_features= f'/ghome/mapiv05/epileptic-detection/data/features_100k/{dim}/'
+    path_features_training= path_features+'training_features.csv'
+    path_features_testing= path_features+'testing_features.csv'
 
-path_results_svm= '/home/mapiv05/epileptic-detection/data/results_svm/dim_windows/'
-name_file_results= 'results.txt'
+    path_results_svm= f'/ghome/mapiv05/epileptic-detection/data/results_svm/{dim}/'
+    name_file_results= 'results.txt'
 
-Svm= SVM(path_features)
-Svm.load_patient_features()
-Svm.train_model()
-Svm.test_model(path_results_svm+name_file_results)
+    Svm= SVM(path_features_training, path_features_testing, dim)
+    Svm.load_patient_features()
+    Svm.train_model()
+    Svm.test_model(path_results_svm+name_file_results)
 
-Svm.generate_confusion_matrix(path_results_svm)
-Svm.generate_roc_curve(path_results_svm)
-Svm.generate_precision_recall(path_results_svm)
+    Svm.generate_confusion_matrix(path_results_svm)
+    Svm.generate_roc_curve(path_results_svm)
+    Svm.generate_precision_recall(path_results_svm)
+
 
