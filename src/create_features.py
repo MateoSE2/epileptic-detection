@@ -4,7 +4,7 @@ import pandas as pd
 import scipy.stats as stats
 
 
-class FeaturesPatient():
+class CalculateFeatures():
     def __init__(self, path_metadata, directorio_data, df_features=None, list_seizure_atacks=None):
         self.metadata= pd.read_csv(path_metadata)
         data= np.load(directorio_data)
@@ -128,50 +128,37 @@ class FeaturesPatient():
         self.df_features.to_csv(os.path.join(folder, filename), index=False)
             
 
-path_metadata= '/home/mapiv05/epileptic-detection/data/metadata/'
-directorio_data= '/home/mapiv05/epileptic-detection/data/windows_data/'
-
-path_features= '/home/mapiv05/epileptic-detection/data/features_data/'
-path_file_txt= '/home/mapiv05/epileptic-detection/data/logs_features/'
+dimensions= ['pacient', 'recording', 'periode']
+tipus= ['training', 'testing']
 
 
-metadata_path_files= os.listdir(path_metadata)
-if '.DS_Store' in metadata_path_files:
-    metadata_path_files.remove('.DS_Store')
+for dim in dimensions:
+    for t in tipus:
 
-data_path_files= os.listdir(directorio_data)
-if '.DS_Store' in data_path_files:
-    data_path_files.remove('.DS_Store')
-
-
-for count, patient_data in enumerate(data_path_files):
-    name_patient= patient_data.split('_')[0]
-
-    file = open(path_file_txt+f'log_{name_patient}.txt', "w")
-    file.write(f'--------------- Log Features patient {name_patient} ---------------\n')
-    file.write('------------------ Start Execution ------------------  \n\n')
-
-    patient_metadata= name_patient+'_raw_eeg_128.csv' #Debería existir
-
-    if patient_metadata in metadata_path_files: #comprueba que existe
-        file.write(f'Exists data and metadata of patient {name_patient}\n')
-
-        features_patient= FeaturesPatient(path_metadata+patient_metadata, directorio_data+patient_data)
-        features_patient.load_non_seizure_windows()
-
-        file.write(f'   - # non seizure windows: {features_patient.df_features.shape[0]}\n')
+        path_metadata= f'/home/mapiv05/epileptic-detection/data/split_train-test/{dim}/metadata/{t}_metadata.csv'
+        path_data= f'/home/mapiv05/epileptic-detection/data/split_train-test/{dim}/data/{t}_data.npz'
+        path_features= f'/home/mapiv05/epileptic-detection/data/features_100k/{dim}/'
 
 
-        list_seizure_atacks= features_patient.load_seizure_periods()
-        number_windows= features_patient.Windows_DataAumentation(1)
+        file = open(path_features+f'log_{t}.txt', "w")
+        file.write(f'--------------- Log Features {t} with dimension {dim} ---------------\n')
+
+        global_features= CalculateFeatures(path_metadata, path_data)
+        file.write(f'   - # total windows of previous data: {global_features.metadata.shape[0]}\n')
+
+        global_features.load_non_seizure_windows()
+
+        file.write('------------------ Start Execution (Data Augmentation) ------------------  \n\n')
+        file.write(f'   - # non seizure windows: {global_features.df_features.shape[0]}\n')
+
+        list_seizure_atacks= global_features.load_seizure_periods()
+        number_windows= global_features.Windows_DataAumentation(1)
         file.write(f'   - # seizure windows with Data Augmentation: {number_windows}\n')
 
-        features_patient.save_features_data(f"features_data_{name_patient}.csv", path_features)
-        file.write(f'   - dim of final pandas: {features_patient.df_features.shape}\n')
+        global_features.save_features_data(f'{t}_features.csv', path_features)
+        file.write(f'   - dim of final pandas: {global_features.df_features.shape}\n')
 
-    else:
-        file.write(f"ERROR: doesn't create features of patient {name_patient}\n")
+        file.write('\n------------------  End Execution ------------------ ')
+        file.close()
 
-    file.write('\n------------------  End Execution ------------------ ')
-    file.close()
 
