@@ -68,7 +68,7 @@ class HyperparameterOptimization:
         model = LightningModule(model, num_classes=num_classes, learning_rate=LEARNING_RATE)
 
         # Logger
-        wandb_logger = None #WandbLogger(project='epileptic-detection', job_type='train')
+        wandb_logger = WandbLogger(project='epileptic-detection', job_type='train')
 
         # Callbacks
         callbacks = [
