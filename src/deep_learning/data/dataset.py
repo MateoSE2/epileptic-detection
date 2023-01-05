@@ -12,7 +12,6 @@ class EpilepticDataset(Dataset):
 
     def __init__(self, root_data_dir: Union[str, Path], metadata: pd.DataFrame, transforms=None):
         self.root_data_dir = Path(root_data_dir)
-        self.data = self.load_data()
         self.metadata_df = metadata
         self.transforms = transforms
 
@@ -25,8 +24,8 @@ class EpilepticDataset(Dataset):
 
     def __getitem__(self, idx):
         metadata = self.metadata_df.iloc[idx]
-        signal = self.data[idx]
-
+        signal = torch.tensor(np.load(self.root_data_dir / "windows_data" / metadata["pacient"] + "_raw_eeg_128.npz")["arr_0"],
+                            dtype=torch.float)
         # Permute (w, c) -> (c, w)
         signal = signal.permute((1, 0))
 

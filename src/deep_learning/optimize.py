@@ -25,7 +25,7 @@ class HyperparameterOptimization:
 
         # Create datamodule
         BATCH_SIZE = trial.suggest_int("batch_size", 8, 32)
-        #print(BATCH_SIZE)
+        print("Batch size:", BATCH_SIZE)
         dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE)
 
         # Choose model

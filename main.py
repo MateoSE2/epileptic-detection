@@ -27,6 +27,7 @@ if __name__ == '__main__':
     raw_data_folder = "data/raw_example"
     window_folder = "data/windows_data"
     metadata_folder = "data/metadata"
+    data_folder = "data/"
 
     if mode == "preprocessing":
         # run the preprocessing
@@ -45,7 +46,7 @@ if __name__ == '__main__':
         dm.setup()
     elif mode == "deep_learning_optimize":
         # run the deep learning
-        root_data_dir = Path("data/").resolve()
+        root_data_dir = Path(data_folder).resolve()
         opt = HyperparameterOptimization(root_data_dir)
         study = optuna.create_study(direction="minimize")
         study.optimize(opt.objective, n_trials=1)
