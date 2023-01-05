@@ -3,9 +3,10 @@ from pathlib import Path
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-from tsai.all import *
+#from tsai.all import *
 
 #from tsai.models.TransformerPlus import TransformerPlus
+from tsai.models.FCNPlus import FCNPlus
 
 from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.models.lightning_module import LightningModule
