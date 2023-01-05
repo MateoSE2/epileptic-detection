@@ -15,16 +15,13 @@ class EpilepticDataset(Dataset):
         self.metadata_df = metadata
         self.transforms = transforms
 
-    def load_data(self) -> torch.Tensor:
-        return torch.tensor(np.load(self.root_data_dir / "windows_data" / "chb01_raw_eeg_128_full.npz")["arr_0"],
-                            dtype=torch.float)
-
     def __len__(self):
         return len(self.metadata_df)
 
     def __getitem__(self, idx):
         metadata = self.metadata_df.iloc[idx]
-        signal = torch.tensor(np.load(self.root_data_dir / "windows_data" / metadata["pacient"] + "_raw_eeg_128.npz")["arr_0"],
+        filename = "chb" + str(metadata["pacient"]).zfill(2) + "_raw_eeg_128.npz"
+        signal = torch.tensor(np.load(self.root_data_dir / "windows_data" / filename)["arr_0"],
                             dtype=torch.float)
         # Permute (w, c) -> (c, w)
         signal = signal.permute((1, 0))
