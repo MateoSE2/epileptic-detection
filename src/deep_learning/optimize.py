@@ -10,6 +10,7 @@ from tsai.models.MLP import MLP
 from tsai.models.TransformerModel import TransformerModel
 from tsai.models.RNNPlus import GRUPlus, LSTMPlus
 
+
 #from tsai.models.TransformerPlus import TransformerPlus
 
 from src.deep_learning.data.datamodule import DataModule
@@ -55,13 +56,15 @@ class HyperparameterOptimization:
 
         model = FCNPlus(21, 2)
 
+        # model = ResCNN(21, 2)
+
         # Create LightningModule
         num_classes = 2
         LEARNING_RATE = trial.suggest_loguniform("learning_rate", 1e-5, 1e-1)
         model = LightningModule(model, num_classes=num_classes, learning_rate=LEARNING_RATE)
 
         # Logger
-        wandb_logger = None # WandbLogger(project='epileptic-detection', job_type='train')
+        wandb_logger = WandbLogger(project='epileptic-detection', job_type='train')
 
         # Callbacks
         callbacks = [
