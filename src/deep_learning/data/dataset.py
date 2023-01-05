@@ -23,6 +23,7 @@ class EpilepticDataset(Dataset):
         filename = "chb" + str(metadata["pacient"]).zfill(2) + "_raw_eeg_128.npz"
         signal = torch.tensor(np.load(self.root_data_dir / "windows_data" / filename)["arr_0"],
                             dtype=torch.float)
+        signal = signal[idx]
         # Permute (w, c) -> (c, w)
         signal = signal.permute((1, 0))
 
