@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Dict, Union
+import os
 
 import pandas as pd
 import pytorch_lightning as pl
@@ -22,17 +23,31 @@ class DataModule(pl.LightningDataModule):
 
     def setup(self, stage: str = None):
         if stage == 'fit' or stage is None:
-            full_train_metadata_df = pd.read_csv(self.root_data_dir / "metadata" / "chb01_raw_eeg_128_full.csv")
+            df_lists = []
+            full_train_metadata_df = pd.DataFrame()
+            for file in os.listdir(self.root_data_dir / "metadata"):
+                df_lists.append(pd.read_csv(self.root_data_dir / "metadata" / file))
+            
+            full_train_metadata_df = pd.concat(df_lists, ignore_index=True)
+
+            print("Pre-split:",full_train_metadata_df.label.value_counts())
+
+            
             train_metadata_df, valid_metadata_df = train_test_split(full_train_metadata_df, test_size=0.2,
                                                                     random_state=0,
                                                                     stratify=full_train_metadata_df['label'])
+
+            print("Post-split train:",train_metadata_df.label.value_counts())
+            print("Post-split valid:",valid_metadata_df.label.value_counts())
 
             self.train_ds = self.dataset(self.root_data_dir, train_metadata_df, transforms=self.transforms["train"])
             self.valid_ds = self.dataset(self.root_data_dir, valid_metadata_df, transforms=self.transforms["valid"])
 
         if stage == 'test' or stage is None:
-            # TODO test csv
-            test_metadata_df = pd.read_csv(self.root_data_dir / "metadata" / "chb01_raw_eeg_128_full.csv")
+            test_metadata_df = pd.DataFrame()
+            for file in os.listdir(self.root_data_dir / "metadata"):
+                test_metadata_df = test_metadata_df.append(pd.read_csv(self.root_data_dir / "metadata" / file), ignore_index=True)
+
             self.test_ds = self.dataset(self.root_data_dir, test_metadata_df, transforms=self.transforms["test"])
 
     def train_dataloader(self):

@@ -3,13 +3,7 @@ from pathlib import Path
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-from tsai.models.FCNPlus import FCNPlus
-from tsai.models.ResCNN import ResCNN
-from tsai.models.InceptionTimePlus import InceptionBlockPlus
-from tsai.models.MLP import MLP
-from tsai.models.TransformerModel import TransformerModel
-from tsai.models.RNNPlus import GRUPlus, LSTMPlus
-
+from tsai.all import *
 
 #from tsai.models.TransformerPlus import TransformerPlus
 
@@ -30,9 +24,8 @@ class HyperparameterOptimization:
 
         # Create datamodule
         BATCH_SIZE = trial.suggest_int("batch_size", 8, 32)
-        print(BATCH_SIZE)
+        #print(BATCH_SIZE)
         dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE)
-        dm.setup()
 
         # Choose model
         #MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResCNN", "InceptionBlockPlus", "MLP", "TransformerModel", "GRUPlus", "LSTMPlus"])
@@ -55,16 +48,25 @@ class HyperparameterOptimization:
         #     raise ValueError(f"Model {MODEL_NAME} not supported.")
 
         model = FCNPlus(21, 2)
-
-        # model = ResCNN(21, 2)
-
+        # model = ResNetPlus(21, 2)
+        # model = XceptionTimePlus(21, 2)
+        # model = GRUPlus(21, 2)
+        # model = LSTMPlus(21, 2)
+        # model = RNNPlus(21, 2)
+        # model = TSSequencerPlus(21, 2, 128)
+        # model = xresnet1d50_deeperplus(21, 2)
+        # model = InceptionTimePlus(21, 2)
+        # model = MGRU_FCNPlus(21, 2, 128)
+        # model = MLSTM_FCNPlus(21, 2, 128)
+        # model = MRNN_FCNPlus(21, 2, 128)
+       
         # Create LightningModule
         num_classes = 2
         LEARNING_RATE = trial.suggest_loguniform("learning_rate", 1e-5, 1e-1)
         model = LightningModule(model, num_classes=num_classes, learning_rate=LEARNING_RATE)
 
         # Logger
-        wandb_logger = WandbLogger(project='epileptic-detection', job_type='train')
+        wandb_logger = None #WandbLogger(project='epileptic-detection', job_type='train')
 
         # Callbacks
         callbacks = [
