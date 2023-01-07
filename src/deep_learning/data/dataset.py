@@ -21,7 +21,7 @@ class EpilepticDataset(Dataset):
     def load_data(self):
         data = {}
         # for debugging purposes only load 2 files
-        for file in os.listdir(self.root_data_dir / "windows_data")[:2]:
+        for file in os.listdir(self.root_data_dir / "windows_data"):
             data[file] = torch.tensor(np.load(self.root_data_dir / "windows_data" / file)["arr_0"])
             print(file, data[file].shape)
         return data
