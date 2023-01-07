@@ -17,7 +17,7 @@ class DataModule(pl.LightningDataModule):
         self.root_data_dir = Path(root_data_dir).resolve()
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.num_workers = 0
+        #self.num_workers = 0
 
         self.dataset = EpilepticDataset
         self.transforms = transforms
