@@ -95,7 +95,7 @@ class HyperparameterOptimization:
         # Create trainer
         trainer = pl.Trainer(max_steps=1000,
                             val_check_interval=500,
-                            gpus=0,
+                            gpus=8,
                             logger=wandb_logger,
                             callbacks=callbacks,
                             enable_progress_bar=True)
