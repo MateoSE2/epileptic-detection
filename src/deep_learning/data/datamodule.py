@@ -33,15 +33,22 @@ class DataModule(pl.LightningDataModule):
 
             full_train_metadata_df = pd.concat(df_lists, ignore_index=True)
 
-            print("Pre-split:",full_train_metadata_df.label.value_counts())
+            print(f"Pre-split (before discarding):\n{full_train_metadata_df.label.value_counts()}")
+
+            # Discard % of the samples with label 0
+            percentage_to_discard = 0.9
+            full_train_metadata_df = full_train_metadata_df[full_train_metadata_df.label == 1]
+            full_train_metadata_df = full_train_metadata_df.append(df_lists[0][df_lists[0].label == 0].sample(frac=1-percentage_to_discard))
+
+            print(f"Pre-split (after discarding {percentage_to_discard*100}% of label 1):\n{full_train_metadata_df.label.value_counts()}")
 
 
             train_metadata_df, valid_metadata_df = train_test_split(full_train_metadata_df, test_size=0.2,
                                                                     random_state=0,
                                                                     stratify=full_train_metadata_df['label'])
 
-            print("Post-split train:\n",train_metadata_df.label.value_counts())
-            print("Post-split valid:\n",valid_metadata_df.label.value_counts())
+            print(f"Train:\n{train_metadata_df.label.value_counts()}")
+            print(f"Valid:\n{valid_metadata_df.label.value_counts()}")
 
             self.train_ds = self.dataset(self.root_data_dir, train_metadata_df, transforms=self.transforms["train"])
             self.valid_ds = self.dataset(self.root_data_dir, valid_metadata_df, transforms=self.transforms["valid"])
