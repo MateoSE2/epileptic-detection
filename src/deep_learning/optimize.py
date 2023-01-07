@@ -43,7 +43,7 @@ class HyperparameterOptimization:
         t = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
             "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
             "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
-        
+
         dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=t)
 
         # Choose model
@@ -95,7 +95,7 @@ class HyperparameterOptimization:
         # Create trainer
         trainer = pl.Trainer(max_steps=1000,
                             val_check_interval=500,
-                            gpus=0,
+                            gpus=1,
                             logger=wandb_logger,
                             callbacks=callbacks,
                             enable_progress_bar=True)
