@@ -32,7 +32,7 @@ class EpilepticDataset(Dataset):
     def __getitem__(self, idx):
         metadata = self.metadata_df.iloc[idx]
         filename = "chb" + str(metadata["pacient"]).zfill(2) + "_raw_eeg_128.npz"
-        #print(f"\nDEBUG: {self.data.keys()}\n")
+        print(f"\nDEBUG: {self.data.keys()}\n")
         signal = self.data[filename][metadata["index"]]
         # Permute (w, c) -> (c, w)
         signal = signal.permute((1, 0))
