@@ -26,13 +26,15 @@ class DataModule(pl.LightningDataModule):
             df_lists = []
             full_train_metadata_df = pd.DataFrame()
             for file in os.listdir(self.root_data_dir / "metadata"):
-                df_lists.append(pd.read_csv(self.root_data_dir / "metadata" / file))
-            
+                df_tmp = pd.read_csv(self.root_data_dir / "metadata" / file)
+                df_tmp = df_tmp.reset_index()
+                df_lists.append(df_tmp)
+
             full_train_metadata_df = pd.concat(df_lists, ignore_index=True)
 
             print("Pre-split:",full_train_metadata_df.label.value_counts())
 
-            
+
             train_metadata_df, valid_metadata_df = train_test_split(full_train_metadata_df, test_size=0.2,
                                                                     random_state=0,
                                                                     stratify=full_train_metadata_df['label'])
