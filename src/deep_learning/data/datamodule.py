@@ -40,8 +40,8 @@ class DataModule(pl.LightningDataModule):
                                                                     random_state=0,
                                                                     stratify=full_train_metadata_df['label'])
 
-            print("Post-split train:",train_metadata_df.label.value_counts())
-            print("Post-split valid:",valid_metadata_df.label.value_counts())
+            print("Post-split train:\n",train_metadata_df.label.value_counts())
+            print("Post-split valid:\n",valid_metadata_df.label.value_counts())
 
             self.train_ds = self.dataset(self.root_data_dir, train_metadata_df, transforms=self.transforms["train"])
             self.valid_ds = self.dataset(self.root_data_dir, valid_metadata_df, transforms=self.transforms["valid"])

@@ -27,7 +27,7 @@ if __name__ == '__main__':
     raw_data_folder = "data/raw_example"
     window_folder = "data/windows_data"
     metadata_folder = "data/metadata"
-    data_folder = "data/"
+    data_folder = "../../epileptic-detection/data/"
 
     if mode == "preprocessing":
         # run the preprocessing
