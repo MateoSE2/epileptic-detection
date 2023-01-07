@@ -21,24 +21,9 @@ import torch
 
 from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.models.lightning_module import LightningModule
+from src.deep_learning.transforms.common import ZScoreNormalize, L2Normalize
 
 import optuna
-
-def random_discard(tensor, discard_ratio=0.5, class_to_discard=0):
-    """
-    Randomly discard all tensor of a given class with a given probability.
-    """
-
-    # Get the indices of the samples to discard
-    indices_to_discard = torch.where(tensor[:, 0] == class_to_discard)[0]
-    indices_to_discard = indices_to_discard[torch.randperm(len(indices_to_discard))]
-
-    # Discard the samples
-    tensor = torch.cat([tensor[:indices_to_discard[0]], tensor[indices_to_discard[-1]+1:]])
-
-    return tensor
-
-
 class HyperparameterOptimization:
 
     def __init__(self, root_data_dir):
@@ -55,16 +40,10 @@ class HyperparameterOptimization:
         print("Batch size:", BATCH_SIZE)
 
         # define transforms {"train": , "valid": None, "test": None}
-        # To balance the dataset create a transform that randomly discards samples
-        t = {"train": transforms.Compose([
-            transforms.Lambda(lambda x: random_discard(x, discard_ratio=0.7, class_to_discard=1)),
-                 ],),
-            "valid": None,
-            "test": None}
-
+        t = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
+            "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
+            "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
         
-
-    
         dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=t)
 
         # Choose model

@@ -15,11 +15,13 @@ class EpilepticDataset(Dataset):
         self.root_data_dir = Path(root_data_dir)
         self.metadata_df = metadata
         self.transforms = transforms
+        self.balance = True
         self.data = self.load_data()
 
     def load_data(self):
         data = {}
-        for file in os.listdir(self.root_data_dir / "windows_data"):
+        # for debugging purposes only load 2 files
+        for file in os.listdir(self.root_data_dir / "windows_data")[:2]:
             data[file] = torch.tensor(np.load(self.root_data_dir / "windows_data" / file)["arr_0"])
             print(file, data[file].shape)
         return data
@@ -39,6 +41,13 @@ class EpilepticDataset(Dataset):
         metadata = metadata[["id", "pacient", "index_inicial", "periode", "recording"]].to_dict()
 
         sample = {"signal": signal, "target": target, "metadata": metadata}
+
+        if self.balance:
+            # if class is 1, randomly discard 90% of the samples
+            if target == 1:
+                if np.random.rand() < 0.9:
+                    sample["signal"] = torch.zeros_like(sample["signal"])
+                    sample["target"] = torch.tensor(0, dtype=torch.long)
 
         if self.transforms:
             sample["signal"] = self.transforms(sample["signal"])
