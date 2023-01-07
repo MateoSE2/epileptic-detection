@@ -42,12 +42,11 @@ class EpilepticDataset(Dataset):
 
         sample = {"signal": signal, "target": target, "metadata": metadata}
 
-        if self.balance:
-            # if class is 1, randomly discard 90% of the samples
-            if target == 1:
-                if np.random.rand() < 0.9:
-                    sample["signal"] = torch.zeros_like(sample["signal"])
-                    sample["target"] = torch.tensor(0, dtype=torch.long)
+        # if self.balance:
+        #     # if class is 1, randomly discard 90% of the samples
+        #     if target == 1:
+        #         if np.random.rand() < 0.9:
+        #             return None
 
         if self.transforms:
             sample["signal"] = self.transforms(sample["signal"])
