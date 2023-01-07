@@ -43,7 +43,7 @@ if __name__ == '__main__':
         # Create datamodule
         root_data_dir = Path("data/").resolve()
         dm = DataModule(root_data_dir, batch_size=4)
-        dm.setup()
+        #dm.setup()
     elif mode == "deep_learning_optimize":
         # run the deep learning
         root_data_dir = Path(data_folder).resolve()

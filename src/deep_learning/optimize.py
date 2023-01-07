@@ -15,14 +15,29 @@ from tsai.models.XResNet1dPlus import xresnet1d50_deeperplus
 from tsai.models.InceptionTimePlus import InceptionTimePlus
 from tsai.models.RNN_FCNPlus import MGRU_FCNPlus, MLSTM_FCNPlus, MRNN_FCNPlus
 
-
+from torchvision import transforms
+import torch
 
 
 from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.models.lightning_module import LightningModule
 
-
 import optuna
+
+def random_discard(tensor, discard_ratio=0.5, class_to_discard=0):
+    """
+    Randomly discard all tensor of a given class with a given probability.
+    """
+
+    # Get the indices of the samples to discard
+    indices_to_discard = torch.where(tensor[:, 0] == class_to_discard)[0]
+    indices_to_discard = indices_to_discard[torch.randperm(len(indices_to_discard))]
+
+    # Discard the samples
+    tensor = torch.cat([tensor[:indices_to_discard[0]], tensor[indices_to_discard[-1]+1:]])
+
+    return tensor
+
 
 class HyperparameterOptimization:
 
@@ -38,8 +53,19 @@ class HyperparameterOptimization:
         BATCH_SIZE = trial.suggest_int("batch_size", 512, 1024)
         BATCH_SIZE = 2
         print("Batch size:", BATCH_SIZE)
+
+        # define transforms {"train": , "valid": None, "test": None}
+        # To balance the dataset create a transform that randomly discards samples
+        t = {"train": transforms.Compose([
+            transforms.Lambda(lambda x: random_discard(x, discard_ratio=0.7, class_to_discard=1)),
+                 ],),
+            "valid": None,
+            "test": None}
+
+        
+
     
-        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE)
+        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=t)
 
         # Choose model
         
