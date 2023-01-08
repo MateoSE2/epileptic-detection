@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # metadata_folder = sys.argv[4]
 
     # for testing
-    mode = "preprocessing"
+    mode = "deep_learning_optimize"
     raw_data_folder = "/ghome/mapiv/database/"
     window_folder = "data/balanced_windows_data"
     metadata_folder = "data/balanced_metadata"

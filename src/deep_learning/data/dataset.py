@@ -11,18 +11,28 @@ from torch.utils.data import Dataset
 
 class EpilepticDataset(Dataset):
 
-    def __init__(self, root_data_dir: Union[str, Path], metadata: pd.DataFrame, transforms=None):
+    def __init__(self, root_data_dir: Union[str, Path], metadata: pd.DataFrame, transforms=None, balanced: bool = False):
         self.root_data_dir = Path(root_data_dir)
         self.metadata_df = metadata
         self.transforms = transforms
-        self.balance = True
-        self.data = self.load_data()
+        self.balanced = balanced
+        # print(f"BALANCED: {balanced}")
+        if balanced:
+            self.data = self.load_balanced_data()
+        else:
+            self.data = self.load_data()
 
     def load_data(self):
         data = {}
-        # for debugging purposes only load 2 files
         for file in os.listdir(self.root_data_dir / "windows_data"):
             data[file] = torch.tensor(np.load(self.root_data_dir / "windows_data" / file)["arr_0"])
+            print(file, data[file].shape)
+        return data
+    
+    def load_balanced_data(self):
+        data = {}
+        for file in os.listdir(self.root_data_dir / "balanced_windows_data"):
+            data[file] = torch.tensor(np.load(self.root_data_dir / "balanced_windows_data" / file)["arr_0"])
             print(file, data[file].shape)
         return data
 

@@ -20,3 +20,14 @@ class L2Normalize(object):
         normalized_tensor = normalize(tensor, p=2, dim=None)
 
         return normalized_tensor
+
+class RandomRotate(object):
+    def __init__(self, probability=0.5):
+        self.probability = probability
+
+    def __call__(self, tensor):
+        # Reverse the tensor along the time axis
+        if torch.rand(1) < self.probability:
+            tensor = tensor.flip(0)
+        
+        return tensor

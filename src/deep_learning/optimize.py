@@ -43,7 +43,7 @@ class HyperparameterOptimization:
             "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
             "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
 
-        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=tsfm)
+        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=tsfm, balanced=True)
 
         # Choose model
 
