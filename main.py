@@ -55,7 +55,7 @@ if __name__ == '__main__':
             "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
 
         dm = DataModule(root_data_dir, batch_size=256, transforms=tsfm, balanced=True)
-        dm.setup()
+        # dm.setup()
 
         opt = HyperparameterOptimization(root_data_dir, dm)
         
