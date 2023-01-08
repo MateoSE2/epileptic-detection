@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 #from tsai.all import *
 
@@ -36,18 +36,17 @@ class HyperparameterOptimization:
 
         # Create datamodule
         BATCH_SIZE = trial.suggest_int("batch_size", 512, 1024)
-        BATCH_SIZE = 2
         print("Batch size:", BATCH_SIZE)
 
         # define transforms {"train": , "valid": None, "test": None}
-        t = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
+        tsfm = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
             "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
             "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
 
-        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=t)
+        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=tsfm)
 
         # Choose model
-        
+
         MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "xresnet1d50_deeperplus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
         print("Model:", MODEL_NAME)
         if MODEL_NAME == "FCNPlus":
@@ -79,26 +78,26 @@ class HyperparameterOptimization:
 
         # Create LightningModule
         num_classes = 2
-        LEARNING_RATE = trial.suggest_loguniform("learning_rate", 1e-5, 1e-1)
+        LEARNING_RATE = trial.suggest_loguniform("learning_rate", 1e-4, 1e-2)
         model = LightningModule(model, num_classes=num_classes, learning_rate=LEARNING_RATE)
 
         # Logger
-        wandb_logger = None # WandbLogger(project='epileptic-detection', job_type='train')
+        wandb_logger = WandbLogger(project='epileptic-detection', job_type='train')
 
         # Callbacks
         callbacks = [
             # EarlyStopping(monitor="val_loss", min_delta=0.00, patience=3, verbose=False, mode="max"),
-            # LearningRateMonitor(),
-            ModelCheckpoint(dirpath="./checkpoints", monitor="val_loss", filename="model_{epoch:02d}_{val_loss:.2f}")
+            #LearningRateMonitor(),
+            #ModelCheckpoint(dirpath="./checkpoints", monitor="val_loss", filename="model_{epoch:02d}_{val_loss:.2f}")
         ]
 
         # Create trainer
-        trainer = pl.Trainer(max_steps=1000,
-                            val_check_interval=500,
-                            gpus=1,
-                            logger=wandb_logger,
-                            callbacks=callbacks,
-                            enable_progress_bar=True)
+        trainer = pl.Trainer(max_steps=250000,
+                             check_val_every_n_epoch=None,
+                             gpus=0,
+                             logger=wandb_logger,
+                             callbacks=callbacks,
+                             enable_progress_bar=True)
 
         trainer.fit(model, dm)
 
@@ -108,6 +107,6 @@ if __name__ == "__main__":
     root_data_dir = Path("../data/").resolve()
     opt = HyperparameterOptimization(root_data_dir)
     study = optuna.create_study(direction="minimize")
-    study.optimize(opt.objective, n_trials=100)
+    study.optimize(opt.objective, n_trials=1)
     print(study.best_trial)
     

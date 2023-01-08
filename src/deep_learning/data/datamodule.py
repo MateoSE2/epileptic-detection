@@ -61,10 +61,10 @@ class DataModule(pl.LightningDataModule):
             self.test_ds = self.dataset(self.root_data_dir, test_metadata_df, transforms=self.transforms["test"])
 
     def train_dataloader(self):
-        return DataLoader(self.train_ds, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
+       return DataLoader(self.train_ds, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, drop_last=True)
 
     def val_dataloader(self):
-        return DataLoader(self.valid_ds, batch_size=self.batch_size, num_workers=self.num_workers)
+        return DataLoader(self.valid_ds, batch_size=self.batch_size, num_workers=self.num_workers, drop_last=True)
 
     def test_dataloader(self):
         return DataLoader(self.test_ds, batch_size=self.batch_size, num_workers=self.num_workers)
