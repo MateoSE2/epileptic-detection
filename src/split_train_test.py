@@ -69,7 +69,7 @@ class CreateMetadataDim():
     def split_valors(self, test_size = 0.2):
         self.training_values, self.testing_values = train_test_split(self.valors, test_size=test_size)
         
-        print(f' train: {self.training_values} \n test:  {self.testing_values}')
+        # print(f' train: {self.training_values} \n test:  {self.testing_values}')
 
     def get_train_test(self, tipus='training'):
 
