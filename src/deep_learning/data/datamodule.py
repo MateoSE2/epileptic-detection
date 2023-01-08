@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 from src.deep_learning.data.dataset import EpilepticDataset
+from src.split_train_test import CreateMetadataDim
 
 
 class DataModule(pl.LightningDataModule):
@@ -50,10 +51,21 @@ class DataModule(pl.LightningDataModule):
 
                 print(f"Pre-split (after discarding {percentage_to_discard*100}% of label 1):\n{full_train_metadata_df.label.value_counts()}")
 
+            total_seizure = sum(full_train_metadata_df.label == 1)
+            total_non_seizure = sum(full_train_metadata_df.label == 0)
+            diff = abs(total_seizure - total_non_seizure)
+            
+            if total_seizure > total_non_seizure:
+                label_to_remove = 1
+                label_to_keep = 0
+            else:
+                label_to_remove = 0
+                label_to_keep = 1
+                
             # Discard periode of label 0 until the number of periode of label 1 is reached
-            while sum(full_train_metadata_df.label == 1) < sum(full_train_metadata_df.label == 0):
+            while sum(full_train_metadata_df.label == label_to_remove) > sum(full_train_metadata_df.label == label_to_keep):
                 # randomly select one row with label 0
-                row_to_remove = full_train_metadata_df[full_train_metadata_df.label == 0].sample(1)
+                row_to_remove = full_train_metadata_df[full_train_metadata_df.label == label_to_remove].sample(1)
 
                 # remove all the elements with the same values in patient, recording and periode
                 full_train_metadata_df = full_train_metadata_df[~((full_train_metadata_df.pacient == row_to_remove.pacient.values[0]) &
@@ -63,12 +75,21 @@ class DataModule(pl.LightningDataModule):
                 
             print(f"Pre-split (after discarding recordings of label 0):\n{full_train_metadata_df.label.value_counts()}")
 
-            train_metadata_df, valid_metadata_df = train_test_split(full_train_metadata_df, test_size=0.2,
-                                                                    random_state=0,
-                                                                    stratify=full_train_metadata_df['label'])
+            # train_metadata_df, valid_metadata_df = train_test_split(full_train_metadata_df, test_size=0.2,
+            #                                                         random_state=0,
+            #                                                         stratify=full_train_metadata_df['label'])
+
+            splitter = CreateMetadataDim(dim = "recording")
+            splitter.group_by(full_train_metadata_df)
+            splitter.split_valors(0.2)
+            train_metadata_df = splitter.get_train_test("training")
+            valid_metadata_df = splitter.get_train_test("testing")
+
 
             print(f"Train:\n{train_metadata_df.label.value_counts()}")
             print(f"Valid:\n{valid_metadata_df.label.value_counts()}")
+
+            
 
             self.train_ds = self.dataset(self.root_data_dir, train_metadata_df, transforms=self.transforms["train"], balanced=self.balanced)
             self.valid_ds = self.dataset(self.root_data_dir, valid_metadata_df, transforms=self.transforms["valid"], balanced=self.balanced)

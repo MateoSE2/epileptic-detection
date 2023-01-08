@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-
 class DataHandler:
     def __init__(self, raw_data_folder, window_data_folder, metadata_folder, second_window_size = 1):
         """

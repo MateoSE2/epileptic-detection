@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 
 class CreateMetadataDim():
-    def __init__(self, path_metadata, path_data, path_metadata_with_split, path_data_with_split, dim):
+    def __init__(self, path_metadata = None, path_data = None, path_metadata_with_split = None, path_data_with_split = None, dim = None):
         self.path_metadata= path_metadata
         self.path_data= path_data
         self.path_metadata_with_split= path_metadata_with_split
@@ -33,7 +33,7 @@ class CreateMetadataDim():
             else:
                 print(f'Empty file: {patient_metadata}\n')
 
-    def group_by(self): 
+    def group_by(self, df = None): 
 
         def GenerateList(grouped_df):
             columns= list(grouped_df.columns.values)[:-1]
@@ -55,19 +55,52 @@ class CreateMetadataDim():
 
         dimension= {'pacient': ['pacient'], 'recording': ['pacient', 'recording'], 'periode': ['pacient', 'recording', 'periode']}
 
+        if df is None:
+            metadata = self.df_metadata
+        else:
+            metadata = df
+            self.df_metadata = df
 
-        grouped_df = self.df_metadata.groupby(dimension[self.dim]
+        grouped_df = metadata.groupby(dimension[self.dim]
                                 ).size().reset_index(name="count")
 
-        self.valors= GenerateList(grouped_df)
+        self.valors = GenerateList(grouped_df)
 
-    def split_valors(self):
-        self.training_values, self.testing_values = train_test_split(self.valors, test_size=0.2)
+    def split_valors(self, test_size = 0.2):
+        self.training_values, self.testing_values = train_test_split(self.valors, test_size=test_size)
         
         print(f' train: {self.training_values} \n test:  {self.testing_values}')
 
+    def get_train_test(self, tipus='training'):
 
-    def load_url_data(self, tipus='training'):
+        if tipus== 'training': values_list= self.training_values
+        elif tipus== 'testing': values_list= self.testing_values
+
+        if self.dim== 'recording':
+            df_list = []
+            for pacient,recording in values_list:
+                metadata_patient = self.df_metadata[(self.df_metadata['pacient']== pacient) & (self.df_metadata['recording']== recording)]
+                df_list.append(metadata_patient)
+        elif self.dim== 'periode':
+            df_list = []
+            for pacient,recording,periode in values_list:
+                metadata_patient = self.df_metadata[(self.df_metadata['pacient']== pacient) & (self.df_metadata['recording']== recording) & (self.df_metadata['periode']== periode)]
+                df_list.append(metadata_patient)
+        elif self.dim== 'pacient':
+            df_list = []
+            for pacient in values_list:
+                metadata_patient = self.df_metadata[(self.df_metadata['pacient']== pacient)]
+                df_list.append(metadata_patient)
+        
+        metadata = pd.concat(df_list, sort= False)
+
+        return metadata
+            
+
+
+
+    def load_url_data(self, tipus='training', only_metadata=False):
+
         if tipus== 'training': values_list= self.training_values
         elif tipus== 'testing': values_list= self.testing_values
 
@@ -191,26 +224,26 @@ class CreateMetadataDim():
         name_filename= f'{tipus}_{filename}'
         metadata.to_csv(os.path.join(self.path_metadata_with_split, name_filename), index=False)
         
-
-path_metadata= '/home/mapiv05/epileptic-detection/data/prova/metadata/'
-path_data= '/home/mapiv05/epileptic-detection/data/prova/data/'
-path_split= '/home/mapiv05/epileptic-detection/data/split_train-test/'
-
-
-dimensions= ['pacient', 'recording', 'periode']
+if __name__ == '__main__':
+    path_metadata= '/home/mapiv05/epileptic-detection/data/prova/metadata/'
+    path_data= '/home/mapiv05/epileptic-detection/data/prova/data/'
+    path_split= '/home/mapiv05/epileptic-detection/data/split_train-test/'
 
 
-for dim in dimensions:
-    path_metadata_with_split= path_split + dim+"/metadata/"
-    path_data_with_split= path_split+ dim +"/data/"
+    dimensions= ['pacient', 'recording', 'periode']
 
-    m= CreateMetadataDim(path_metadata, path_data, path_metadata_with_split, path_data_with_split, dim)
-    m.load_all_metadata()
-    m.group_by()
-    m.split_valors()
 
-    m.load_url_data('training')
-    m.load_data_metadata('training')
+    for dim in dimensions:
+        path_metadata_with_split= path_split + dim+"/metadata/"
+        path_data_with_split= path_split+ dim +"/data/"
 
-    m.load_url_data('testing')
-    m.load_data_metadata('testing')
+        m= CreateMetadataDim(path_metadata, path_data, path_metadata_with_split, path_data_with_split, dim)
+        m.load_all_metadata()
+        m.group_by()
+        m.split_valors()
+
+        m.load_url_data('training')
+        m.load_data_metadata('training')
+
+        m.load_url_data('testing')
+        m.load_data_metadata('testing')
