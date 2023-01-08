@@ -99,7 +99,8 @@ class HyperparameterOptimization:
                              gpus=0,
                              logger=wandb_logger,
                              callbacks=callbacks,
-                             enable_progress_bar=True)
+                             enable_progress_bar=True,
+                             accelerator="gpu")
 
         trainer.fit(model, dm)
 
