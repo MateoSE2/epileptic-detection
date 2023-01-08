@@ -27,7 +27,7 @@ if __name__ == '__main__':
     raw_data_folder = "/ghome/mapiv/database/"
     window_folder = "data/balanced_windows_data"
     metadata_folder = "data/balanced_metadata"
-    data_folder = "sample_data/"
+    data_folder = "data/"
 
     if mode == "preprocessing":
         # run the preprocessing

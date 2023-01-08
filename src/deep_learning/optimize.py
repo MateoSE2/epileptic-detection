@@ -38,7 +38,6 @@ class HyperparameterOptimization:
         BATCH_SIZE = trial.suggest_int("batch_size", 32, 256)
         print("Batch size:", BATCH_SIZE)
         # BATCH_SIZE = 32
-        BATCH_SIZE = 500
 
         # define transforms {"train": , "valid": None, "test": None}
         tsfm = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
@@ -95,7 +94,7 @@ class HyperparameterOptimization:
         ]
 
         # Create trainer
-        trainer = pl.Trainer(max_epochs=5,#max_steps=10000,
+        trainer = pl.Trainer(max_steps=10000,
                              check_val_every_n_epoch=None,
                              gpus=1,
                              logger=wandb_logger,
