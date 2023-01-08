@@ -49,6 +49,7 @@ class HyperparameterOptimization:
 
         MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "xresnet1d50_deeperplus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
         print("Model:", MODEL_NAME)
+        MODEL_NAME = "xresnet1d50_deeperplus"
         if MODEL_NAME == "FCNPlus":
             model = FCNPlus(21, 2)
         elif MODEL_NAME == "ResNetPlus":
@@ -94,7 +95,7 @@ class HyperparameterOptimization:
         # Create trainer
         trainer = pl.Trainer(max_steps=250000,
                              check_val_every_n_epoch=None,
-                             gpus=1,
+                             gpus=0,
                              logger=wandb_logger,
                              callbacks=callbacks,
                              enable_progress_bar=True)
