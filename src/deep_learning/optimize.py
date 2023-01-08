@@ -35,8 +35,9 @@ class HyperparameterOptimization:
         """
 
         # Create datamodule
-        BATCH_SIZE = trial.suggest_int("batch_size", 512, 1024)
+        BATCH_SIZE = trial.suggest_int("batch_size", 32, 256)
         print("Batch size:", BATCH_SIZE)
+        # BATCH_SIZE = 32
 
         # define transforms {"train": , "valid": None, "test": None}
         tsfm = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
@@ -49,7 +50,7 @@ class HyperparameterOptimization:
 
         MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "xresnet1d50_deeperplus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
         print("Model:", MODEL_NAME)
-        MODEL_NAME = "xresnet1d50_deeperplus"
+        # MODEL_NAME = "xresnet1d50_deeperplus"
         if MODEL_NAME == "FCNPlus":
             model = FCNPlus(21, 2)
         elif MODEL_NAME == "ResNetPlus":
@@ -93,7 +94,7 @@ class HyperparameterOptimization:
         ]
 
         # Create trainer
-        trainer = pl.Trainer(max_steps=250000,
+        trainer = pl.Trainer(max_steps=10000,
                              check_val_every_n_epoch=None,
                              gpus=0,
                              logger=wandb_logger,

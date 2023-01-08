@@ -49,7 +49,7 @@ if __name__ == '__main__':
         root_data_dir = Path(data_folder).resolve()
         opt = HyperparameterOptimization(root_data_dir)
         study = optuna.create_study(direction="minimize")
-        study.optimize(opt.objective, n_trials=1)
+        study.optimize(opt.objective, n_trials=50)
         print(study.best_trial)
 
         
