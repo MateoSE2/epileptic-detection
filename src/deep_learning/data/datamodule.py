@@ -50,6 +50,18 @@ class DataModule(pl.LightningDataModule):
 
                 print(f"Pre-split (after discarding {percentage_to_discard*100}% of label 1):\n{full_train_metadata_df.label.value_counts()}")
 
+            # Discard periode of label 0 until the number of periode of label 1 is reached
+            while sum(full_train_metadata_df.label == 1) < sum(full_train_metadata_df.label == 0):
+                # randomly select one row with label 0
+                row_to_remove = full_train_metadata_df[full_train_metadata_df.label == 0].sample(1)
+
+                # remove all the elements with the same values in patient, recording and periode
+                full_train_metadata_df = full_train_metadata_df[~((full_train_metadata_df.pacient == row_to_remove.pacient.values[0]) &
+                                                                    (full_train_metadata_df.recording == row_to_remove.recording.values[0]) &
+                                                                    (full_train_metadata_df.periode == row_to_remove.periode.values[0]))]
+                
+                
+            print(f"Pre-split (after discarding recordings of label 0):\n{full_train_metadata_df.label.value_counts()}")
 
             train_metadata_df, valid_metadata_df = train_test_split(full_train_metadata_df, test_size=0.2,
                                                                     random_state=0,

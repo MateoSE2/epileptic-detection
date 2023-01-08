@@ -15,10 +15,6 @@ from tsai.models.XResNet1dPlus import xresnet1d50_deeperplus
 from tsai.models.InceptionTimePlus import InceptionTimePlus
 from tsai.models.RNN_FCNPlus import MGRU_FCNPlus, MLSTM_FCNPlus, MRNN_FCNPlus
 
-from torchvision import transforms
-import torch
-
-
 from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.models.lightning_module import LightningModule
 from src.deep_learning.transforms.common import ZScoreNormalize, L2Normalize
@@ -26,26 +22,14 @@ from src.deep_learning.transforms.common import ZScoreNormalize, L2Normalize
 import optuna
 class HyperparameterOptimization:
 
-    def __init__(self, root_data_dir):
+    def __init__(self, root_data_dir, data_module):
         self.root_data_dir = root_data_dir
+        self.data_module = data_module
 
     def objective(self,trial):
         """
         Objective function to be optimized.
         """
-
-        # Create datamodule
-        BATCH_SIZE = trial.suggest_int("batch_size", 32, 256)
-        print("Batch size:", BATCH_SIZE)
-        # BATCH_SIZE = 32
-
-        # define transforms {"train": , "valid": None, "test": None}
-        tsfm = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
-            "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
-            "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
-
-        dm = DataModule(self.root_data_dir, batch_size=BATCH_SIZE, transforms=tsfm, balanced=True)
-
         # Choose model
 
         MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "xresnet1d50_deeperplus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
@@ -94,7 +78,7 @@ class HyperparameterOptimization:
         ]
 
         # Create trainer
-        trainer = pl.Trainer(max_steps=10000,
+        trainer = pl.Trainer(max_steps=100000,
                              check_val_every_n_epoch=None,
                              gpus=1,
                              logger=wandb_logger,
@@ -102,14 +86,8 @@ class HyperparameterOptimization:
                              enable_progress_bar=True,
                              accelerator="gpu")
 
-        trainer.fit(model, dm)
+
+        trainer.fit(model, self.data_module)
 
         return model.min_loss
-
-if __name__ == "__main__":
-    root_data_dir = Path("../data/").resolve()
-    opt = HyperparameterOptimization(root_data_dir)
-    study = optuna.create_study(direction="minimize")
-    study.optimize(opt.objective, n_trials=1)
-    print(study.best_trial)
     

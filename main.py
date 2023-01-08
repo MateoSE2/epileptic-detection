@@ -12,6 +12,8 @@ from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.optimize import HyperparameterOptimization
 from pathlib import Path
 import optuna
+from torchvision import transforms
+from src.deep_learning.transforms.common import ZScoreNormalize, L2Normalize
 
 
 if __name__ == '__main__':
@@ -47,7 +49,16 @@ if __name__ == '__main__':
     elif mode == "deep_learning_optimize":
         # run the deep learning
         root_data_dir = Path(data_folder).resolve()
-        opt = HyperparameterOptimization(root_data_dir)
+
+        tsfm = {"train": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
+            "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
+            "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
+
+        dm = DataModule(root_data_dir, batch_size=256, transforms=tsfm, balanced=True)
+        dm.setup()
+
+        opt = HyperparameterOptimization(root_data_dir, dm)
+        
         study = optuna.create_study(direction="minimize")
         study.optimize(opt.objective, n_trials=50)
         print(study.best_trial)
