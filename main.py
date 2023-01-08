@@ -23,11 +23,11 @@ if __name__ == '__main__':
     # metadata_folder = sys.argv[4]
 
     # for testing
-    mode = "deep_learning_optimize"
-    raw_data_folder = "data/raw_example"
-    window_folder = "data/windows_data"
-    metadata_folder = "data/metadata"
-    data_folder = "../../epileptic-detection/data/"
+    mode = "preprocessing"
+    raw_data_folder = "/ghome/mapiv/database/"
+    window_folder = "data/balanced_windows_data"
+    metadata_folder = "data/balanced_metadata"
+    data_folder = "data/"
 
     if mode == "preprocessing":
         # run the preprocessing

@@ -163,14 +163,27 @@ class DataHandler:
             recording = period[1]
             period = period[2]
 
-            # slice by windows
-            for i in range(0,period.shape[0],self.WINDOW_SIZE):
+            # slice by windows, if the label is 1 (seizure) then overlap the windows with step 1
+            if label == 1:
+                slicing_step = 1
+            else:
+                slicing_step = self.WINDOW_SIZE
+            
+            for i in range(0,period.shape[0],slicing_step):
                 if i+self.WINDOW_SIZE <= period.shape[0]:
                     window = period[i:i+self.WINDOW_SIZE]
                     windows.append(window)
                     row = pd.DataFrame([[window_id,label,pat_id,i,n_period,recording]],columns=["id","label","pacient","index_inicial","periode","recording"])
                     metadata = pd.concat([metadata,row],ignore_index=True)
                     window_id += 1
+
+            # for i in range(0,period.shape[0],self.WINDOW_SIZE):
+            #     if i+self.WINDOW_SIZE <= period.shape[0]:
+            #         window = period[i:i+self.WINDOW_SIZE]
+            #         windows.append(window)
+            #         row = pd.DataFrame([[window_id,label,pat_id,i,n_period,recording]],columns=["id","label","pacient","index_inicial","periode","recording"])
+            #         metadata = pd.concat([metadata,row],ignore_index=True)
+            #         window_id += 1
 
             # debugging purposes
             # n_period += 1
