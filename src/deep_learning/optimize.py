@@ -32,7 +32,7 @@ class HyperparameterOptimization:
         """
         # Choose model
 
-        MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "xresnet1d50_deeperplus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
+        MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
         print("Model:", MODEL_NAME)
         # MODEL_NAME = "xresnet1d50_deeperplus"
         if MODEL_NAME == "FCNPlus":
