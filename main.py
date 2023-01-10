@@ -29,7 +29,7 @@ if __name__ == '__main__':
     raw_data_folder = "/ghome/mapiv/database/"
     window_folder = "data/balanced_windows_data"
     metadata_folder = "data/balanced_metadata"
-    data_folder = "data/"
+    data_folder = "../../epileptic-detection/data/"
 
     if mode == "preprocessing":
         # run the preprocessing
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         # create the datamodule
         # Create datamodule
         root_data_dir = Path("data/").resolve()
-        dm = DataModule(root_data_dir, batch_size=4)
+        dm = DataModule(root_data_dir, batch_size=256)
         #dm.setup()
     elif mode == "deep_learning_optimize":
         # run the deep learning
@@ -54,13 +54,13 @@ if __name__ == '__main__':
             "valid": transforms.Compose([ZScoreNormalize(), L2Normalize()]), 
             "test": transforms.Compose([ZScoreNormalize(), L2Normalize()])}
 
-        dm = DataModule(root_data_dir, batch_size=256, transforms=tsfm, balanced=True)
+        dm = DataModule(root_data_dir, batch_size=256, transforms=tsfm, balanced=False)
         # dm.setup()
 
         opt = HyperparameterOptimization(root_data_dir, dm)
-        
+
         study = optuna.create_study(direction="minimize")
         study.optimize(opt.objective, n_trials=50)
         print(study.best_trial)
 
-        
+

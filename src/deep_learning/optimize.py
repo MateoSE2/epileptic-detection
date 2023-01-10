@@ -14,6 +14,7 @@ from tsai.models.TSSequencerPlus import TSSequencerPlus
 from tsai.models.XResNet1dPlus import xresnet1d50_deeperplus
 from tsai.models.InceptionTimePlus import InceptionTimePlus
 from tsai.models.RNN_FCNPlus import MGRU_FCNPlus, MLSTM_FCNPlus, MRNN_FCNPlus
+from tsai.models.TSTPlus import TSTPlus
 
 from src.deep_learning.data.datamodule import DataModule
 from src.deep_learning.models.lightning_module import LightningModule
@@ -32,7 +33,7 @@ class HyperparameterOptimization:
         """
         # Choose model
 
-        MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "GRUPlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "InceptionTimePlus", "MGRU_FCNPlus", "MLSTM_FCNPlus", "MRNN_FCNPlus"])
+        MODEL_NAME = trial.suggest_categorical("model", ["FCNPlus", "ResNetPlus", "XceptionTimePlus", "LSTMPlus", "RNNPlus", "TSSequencerPlus", "InceptionTimePlus", "TSTPlus"])
         print("Model:", MODEL_NAME)
         # MODEL_NAME = "xresnet1d50_deeperplus"
         if MODEL_NAME == "FCNPlus":
@@ -59,12 +60,14 @@ class HyperparameterOptimization:
             model = MLSTM_FCNPlus(21, 2, 128)
         elif MODEL_NAME == "MRNN_FCNPlus":
             model = MRNN_FCNPlus(21, 2, 128)
+        elif MODEL_NAME == "TSTPlus":
+            model = TSTPlus(21, 2, 128)
         else:
             raise ValueError("Invalid model name.")
 
         # Create LightningModule
         num_classes = 2
-        LEARNING_RATE = trial.suggest_loguniform("learning_rate", 1e-4, 1e-2)
+        LEARNING_RATE = 1e-2 #trial.suggest_loguniform("learning_rate", 1e-4, 1e-2)
         model = LightningModule(model, num_classes=num_classes, learning_rate=LEARNING_RATE)
 
         # Logger
@@ -73,18 +76,20 @@ class HyperparameterOptimization:
         # Callbacks
         callbacks = [
             # EarlyStopping(monitor="val_loss", min_delta=0.00, patience=3, verbose=False, mode="max"),
-            #LearningRateMonitor(),
-            #ModelCheckpoint(dirpath="./checkpoints", monitor="val_loss", filename="model_{epoch:02d}_{val_loss:.2f}")
+            LearningRateMonitor(),
+            ModelCheckpoint(dirpath="./checkpoints", monitor="val_loss", filename="model_{MODEL_NAME}_{epoch:02d}_{val_loss:.2f}")
         ]
 
         # Create trainer
-        trainer = pl.Trainer(max_steps=100000,
+        trainer = pl.Trainer(max_epochs = 10,
                              check_val_every_n_epoch=None,
-                             gpus=1,
+                             # gpus=0,
+                             # devices=[0],
                              logger=wandb_logger,
                              callbacks=callbacks,
-                             enable_progress_bar=True,
-                             accelerator="gpu")
+                             enable_progress_bar=True
+                             # accelerator="gpu"
+                             )
 
 
         trainer.fit(model, self.data_module)
