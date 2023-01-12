@@ -13,7 +13,7 @@ from src.split_train_test import CreateMetadataDim
 
 class DataModule(pl.LightningDataModule):
     def __init__(self, root_data_dir: Union[str, Path] = './data', batch_size: int = 32, num_workers: int = 4,
-                 transforms: Dict = {"train": None, "valid": None, "test": None}, balanced: bool = False):
+                 transforms: Dict = {"train": None, "valid": None, "test": None}, balanced: bool = False, testing = False):
         super().__init__()
         self.root_data_dir = Path(root_data_dir).resolve()
         self.batch_size = batch_size
@@ -23,6 +23,7 @@ class DataModule(pl.LightningDataModule):
 
         self.dataset = EpilepticDataset
         self.transforms = transforms
+        self.testing = testing
 
     def setup(self, stage: str = None):
         if self.balanced:

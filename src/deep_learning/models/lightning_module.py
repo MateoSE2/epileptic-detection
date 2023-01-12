@@ -24,7 +24,7 @@ class LightningModule(pl.LightningModule):
 
         self.min_loss = 10000000
 
-    def forward(self, x, metadata):
+    def forward(self, x):
         x = self.model.backbone(x)
         x = self.model.head(x)
         x = self.softmax(x)

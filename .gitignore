@@ -2,3 +2,4 @@ data/raw_example/
 data/raw_example/
 epileptic_env/
 wandb/
+src/deep_learning/__pycache__/
